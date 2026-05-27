@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+build/
+.eggs/
+*.so
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.cache/
+.parcel-cache/
+
+# dbt
+dbt_transform/target/
+dbt_transform/dbt_packages/
+dbt_transform/logs/
+
+# Great Expectations
+dbt_transform/great_expectations/uncommitted/
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
+
+# Django
+api/staticfiles/
+api/mediafiles/
+*.sqlite3
+
+# Airflow
+airflow/logs/
+airflow/plugins/__pycache__/
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+
+# Logs
+*.log
+logs/
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
