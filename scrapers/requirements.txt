@@ -1,0 +1,35 @@
+# =============================================================================
+# scrapers/requirements.txt — Python dependencies for the scrapers package
+#
+# Install with:  pip install -r scrapers/requirements.txt
+#
+# After installing Playwright's Python package, you also need to download
+# the browser binaries once:
+#   playwright install chromium
+# =============================================================================
+
+# Playwright — browser automation. Used by all scrapers to load and interact
+# with web pages. We use Chromium (Chrome) as our browser engine.
+playwright==1.44.0
+
+# psycopg2-binary — Python adapter for Postgres. Lets us run SQL queries
+# from Python. The "-binary" variant includes compiled C extensions so you
+# don't need to install libpq-dev separately on most systems.
+psycopg2-binary==2.9.9
+
+# pytest — the test runner. `pytest tests/` discovers and runs all test files
+# that start with "test_".
+pytest==8.2.2
+
+# python-dotenv — loads variables from a .env file into os.environ so your
+# scripts can read DB_URL, etc. without hardcoding credentials.
+python-dotenv==1.0.1
+
+# beautifulsoup4 — HTML parser. Even though we use Playwright to load pages,
+# BeautifulSoup is much easier for extracting data from HTML than Playwright's
+# built-in selectors for complex pages.
+beautifulsoup4==4.12.3
+
+# lxml — a faster HTML parser backend for BeautifulSoup. Pass it as:
+#   BeautifulSoup(html, "lxml")
+lxml==5.2.2
