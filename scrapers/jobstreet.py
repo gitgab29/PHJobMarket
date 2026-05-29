@@ -93,13 +93,14 @@ class JobStreetScraper(BaseScraper):
 
     def _scrape_all_pages(self, page) -> list[dict]:
         records = []
+        seen_ids: set[str] = set()
 
         for page_num in range(1, MAX_PAGES + 1):
-            url = f"{JOBS_URL}?pg={page_num}"
+            # SEEK/JobStreet paginates with ?page=N — ?pg= is silently ignored
+            # and causes every "page" to return page 1 again.
+            url = f"{JOBS_URL}?page={page_num}"
             logger.info("[jobstreet] Loading page %d: %s", page_num, url)
 
-            # "load" waits for the load event (all resources fetched).
-            # Then we wait for networkidle so inline JS has had a chance to run.
             page.goto(url, wait_until="load", timeout=45_000)
             try:
                 page.wait_for_load_state("networkidle", timeout=10_000)
@@ -108,7 +109,6 @@ class JobStreetScraper(BaseScraper):
 
             self._random_delay(3, 8)
 
-            # Diagnostic header — visible even on bot-detection pages
             title = page.title()
             content_len = len(page.content())
             logger.info(
@@ -121,10 +121,23 @@ class JobStreetScraper(BaseScraper):
                 logger.info("[jobstreet] No jobs on page %d — stopping", page_num)
                 break
 
+            # Detect broken pagination: stop if every job on this page has
+            # already been seen (i.e. the site served the same page again).
+            page_ids = {j["source_id"] for j in jobs if j.get("source_id")}
+            new_ids = page_ids - seen_ids
+            if not new_ids:
+                logger.warning(
+                    "[jobstreet] Page %d returned only duplicate source_ids — "
+                    "pagination appears broken; stopping early",
+                    page_num,
+                )
+                break
+
+            seen_ids.update(new_ids)
             records.extend(jobs)
             logger.info(
-                "[jobstreet] Page %d: %d jobs (%d total)",
-                page_num, len(jobs), len(records),
+                "[jobstreet] Page %d: %d jobs (%d new, %d total)",
+                page_num, len(jobs), len(new_ids), len(records),
             )
 
         return records
