@@ -14,7 +14,7 @@
 # .PHONY tells Make that these targets are not files — they're just commands.
 # Without this, Make would check if a file named "up" exists and skip the
 # command if it did. We never want that behavior here.
-.PHONY: up down logs psql scrape-philjobnet scrape-kalibrr scrape-jobstreet dbt-deps dbt-seed dbt-run dbt-test dbt-debug test
+.PHONY: up down logs psql scrape-philjobnet scrape-kalibrr scrape-jobstreet scrape-onlinejobs scrape-indeed dbt-deps dbt-seed dbt-run dbt-test dbt-debug test
 
 # -----------------------------------------------------------------------------
 # make up
@@ -77,6 +77,22 @@ scrape-kalibrr:
 scrape-jobstreet:
 	DB_URL=postgresql://phjobmarket:phjobmarket@127.0.0.1:15432/phjobmarket \
 	python -m scrapers.jobstreet
+
+# -----------------------------------------------------------------------------
+# make scrape-onlinejobs
+# Runs the OnlineJobs.ph scraper — remote jobs, USD salaries.
+# -----------------------------------------------------------------------------
+scrape-onlinejobs:
+	DB_URL=postgresql://phjobmarket:phjobmarket@127.0.0.1:15432/phjobmarket \
+	python -m scrapers.onlineJobs
+
+# -----------------------------------------------------------------------------
+# make scrape-indeed
+# Runs the Indeed PH scraper. Stops gracefully on CAPTCHA detection.
+# -----------------------------------------------------------------------------
+scrape-indeed:
+	DB_URL=postgresql://phjobmarket:phjobmarket@127.0.0.1:15432/phjobmarket \
+	python -m scrapers.indeed
 
 # -----------------------------------------------------------------------------
 # make dbt-debug
