@@ -1,0 +1,10 @@
+# packages.yml — external dbt packages this project depends on
+#
+# dbt_utils gives us extra test helpers like accepted_range (used in
+# _marts__models.yml to validate salary_min is between 0 and 10,000,000).
+#
+# Install with: dbt deps  (run this once before dbt run)
+
+packages:
+  - package: dbt-labs/dbt_utils
+    version: ">=1.1.0"

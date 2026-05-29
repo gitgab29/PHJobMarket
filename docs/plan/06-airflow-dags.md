@@ -76,7 +76,6 @@ SCRAPERS = {
     "onlinejobs": "scrapers.onlinejobs.OnlineJobsScraper",
     "indeed": "scrapers.indeed.IndeedScraper",
     "facebook": "scrapers.facebook.FacebookScraper",
-    "reddit": "scrapers.reddit.RedditScraper",
 }
 
 with DAG(
@@ -160,8 +159,7 @@ Daily @ 2AM Manila
     │   ├── scrape_jobstreet   ─┤
     │   ├── scrape_onlinejobs  ─┤
     │   ├── scrape_indeed      ─┤
-    │   ├── scrape_facebook    ─┤
-    │   └── scrape_reddit      ─┘
+    │   └── scrape_facebook    ─┘
     │          │
     │          ▼ (all complete)
     └── dbt_transform DAG

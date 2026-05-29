@@ -15,7 +15,6 @@
 ### Week 2: More Scrapers + dbt Basics
 - [ ] Implement `KalibrrScraper` (API intercept)
 - [ ] Implement `JobStreetScraper` (redux data extraction)
-- [ ] Implement `RedditScraper` (API-based, quick win)
 - [ ] Set up dbt project structure, `profiles.yml`
 - [ ] Write staging models for PhilJobNet + Kalibrr
 - [ ] Write `skill_aliases.csv` and `ph_regions.csv` seeds

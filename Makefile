@@ -14,7 +14,7 @@
 # .PHONY tells Make that these targets are not files — they're just commands.
 # Without this, Make would check if a file named "up" exists and skip the
 # command if it did. We never want that behavior here.
-.PHONY: up down logs psql scrape-philjobnet test
+.PHONY: up down logs psql scrape-philjobnet scrape-kalibrr scrape-jobstreet dbt-deps dbt-seed dbt-run dbt-test dbt-debug test
 
 # -----------------------------------------------------------------------------
 # make up
@@ -61,6 +61,62 @@ psql:
 scrape-philjobnet:
 	DB_URL=postgresql://phjobmarket:phjobmarket@127.0.0.1:15432/phjobmarket \
 	python -m scrapers.philjobnet
+
+# -----------------------------------------------------------------------------
+# make scrape-kalibrr
+# Runs the Kalibrr scraper. Requires make up + pip install -r scrapers/requirements.txt
+# -----------------------------------------------------------------------------
+scrape-kalibrr:
+	DB_URL=postgresql://phjobmarket:phjobmarket@127.0.0.1:15432/phjobmarket \
+	python -m scrapers.kalibrr
+
+# -----------------------------------------------------------------------------
+# make scrape-jobstreet
+# Runs the JobStreet scraper.
+# -----------------------------------------------------------------------------
+scrape-jobstreet:
+	DB_URL=postgresql://phjobmarket:phjobmarket@127.0.0.1:15432/phjobmarket \
+	python -m scrapers.jobstreet
+
+# -----------------------------------------------------------------------------
+# make dbt-debug
+# Verifies that dbt can connect to Postgres. Run this first to check setup.
+# The "--profiles-dir ." flag tells dbt to find profiles.yml in dbt_transform/
+# -----------------------------------------------------------------------------
+dbt-debug:
+	cd dbt_transform && dbt debug --profiles-dir .
+
+# -----------------------------------------------------------------------------
+# make dbt-deps
+# Installs dbt packages listed in packages.yml (e.g. dbt_utils).
+# Run this once after cloning the repo or adding a new package.
+# -----------------------------------------------------------------------------
+dbt-deps:
+	cd dbt_transform && dbt deps --profiles-dir .
+
+# -----------------------------------------------------------------------------
+# make dbt-seed
+# Loads CSV files from dbt_transform/seeds/ into the database as tables.
+# Run once (or whenever you update the CSVs).
+# -----------------------------------------------------------------------------
+dbt-seed:
+	cd dbt_transform && dbt seed --profiles-dir .
+
+# -----------------------------------------------------------------------------
+# make dbt-run
+# Compiles and runs all dbt models (staging → intermediate → marts).
+# Staging views appear in the "staging" schema; marts in "warehouse".
+# -----------------------------------------------------------------------------
+dbt-run:
+	cd dbt_transform && dbt run --profiles-dir .
+
+# -----------------------------------------------------------------------------
+# make dbt-test
+# Runs all dbt data quality tests defined in _staging__sources.yml
+# and _marts__models.yml. Expects zero failures.
+# -----------------------------------------------------------------------------
+dbt-test:
+	cd dbt_transform && dbt test --profiles-dir .
 
 # -----------------------------------------------------------------------------
 # make test

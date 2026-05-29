@@ -21,7 +21,6 @@ PHJobMarket/
 │   ├── onlinejobs.py
 │   ├── indeed.py
 │   ├── facebook.py
-│   ├── reddit.py
 │   ├── utils/
 │   │   ├── __init__.py
 │   │   ├── salary_parser.py         # PH salary extraction
@@ -49,8 +48,7 @@ PHJobMarket/
 │   │   │   ├── stg_raw__jobstreet.sql
 │   │   │   ├── stg_raw__onlinejobs.sql
 │   │   │   ├── stg_raw__indeed.sql
-│   │   │   ├── stg_raw__facebook.sql
-│   │   │   └── stg_raw__reddit_salaries.sql
+│   │   │   └── stg_raw__facebook.sql
 │   │   ├── intermediate/
 │   │   │   ├── _intermediate__models.yml
 │   │   │   ├── int_jobs__unified.sql

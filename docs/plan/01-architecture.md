@@ -4,21 +4,17 @@
                     ┌──────────────────────────────────────────────┐
                     │              AIRFLOW SCHEDULER                │
                     │  (orchestrates everything on daily schedule)  │
-                    └──────────┬───────────────────────┬───────────┘
-                               │                       │
-                    ┌──────────▼──────────┐ ┌──────────▼──────────┐
-                    │      SCRAPERS       │ │     REDDIT API       │
-                    │  Playwright + BS4   │ │   (salary threads)   │
-                    │                     │ │                      │
-                    │  • PhilJobNet       │ └──────────┬───────────┘
-                    │  • Kalibrr          │            │
-                    │  • JobStreet        │            │
-                    │  • OnlineJobs.ph    │            │
-                    │  • Indeed PH        │            │
-                    │  • FB Job Groups    │            │
-                    └──────────┬──────────┘            │
-                               │                       │
-                    ┌──────────▼───────────────────────▼───────────┐
+                    └──────────────────────┬───────────────────────┘
+                                           │
+                    ┌──────────────────────▼───────────────────────┐
+                    │                  SCRAPERS                     │
+                    │            Playwright + BS4                   │
+                    │                                               │
+                    │  • PhilJobNet  • Kalibrr  • JobStreet        │
+                    │  • OnlineJobs.ph  • Indeed PH  • FB Groups   │
+                    └──────────────────────┬───────────────────────┘
+                                           │
+                    ┌──────────────────────▼───────────────────────┐
                     │           POSTGRESQL — raw schema             │
                     │  (JSONB blobs, exactly as scraped)            │
                     └──────────────────────┬───────────────────────┘

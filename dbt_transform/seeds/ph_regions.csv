@@ -1,0 +1,37 @@
+city,province,region,is_ncr
+Manila,Metro Manila,NCR,true
+Makati,Metro Manila,NCR,true
+Quezon City,Metro Manila,NCR,true
+Taguig,Metro Manila,NCR,true
+Pasig,Metro Manila,NCR,true
+Mandaluyong,Metro Manila,NCR,true
+San Juan,Metro Manila,NCR,true
+Marikina,Metro Manila,NCR,true
+Parañaque,Metro Manila,NCR,true
+Las Piñas,Metro Manila,NCR,true
+Muntinlupa,Metro Manila,NCR,true
+Valenzuela,Metro Manila,NCR,true
+Navotas,Metro Manila,NCR,true
+Malabon,Metro Manila,NCR,true
+Caloocan,Metro Manila,NCR,true
+Pasay,Metro Manila,NCR,true
+Pateros,Metro Manila,NCR,true
+Clark,Pampanga,Region III,false
+Angeles,Pampanga,Region III,false
+San Fernando,Pampanga,Region III,false
+Cebu City,Cebu,Region VII,false
+Mandaue,Cebu,Region VII,false
+Lapu-Lapu,Cebu,Region VII,false
+Davao City,Davao del Sur,Region XI,false
+Iloilo City,Iloilo,Region VI,false
+Bacolod,Negros Occidental,Region VI,false
+Cagayan de Oro,Misamis Oriental,Region X,false
+Zamboanga City,Zamboanga del Sur,Region IX,false
+General Santos,South Cotabato,Region XII,false
+Tagaytay,Cavite,Region IV-A,false
+Antipolo,Rizal,Region IV-A,false
+Cavite City,Cavite,Region IV-A,false
+Calamba,Laguna,Region IV-A,false
+San Pablo,Laguna,Region IV-A,false
+Batangas City,Batangas,Region IV-A,false
+Lipa,Batangas,Region IV-A,false

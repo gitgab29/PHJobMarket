@@ -18,7 +18,6 @@
 | Duplicates across sources | Same job on Kalibrr + JobStreet counted twice | Dedupe in `int_jobs__deduped` by title+company fuzzy match. Accept some dupes for MVP |
 | Salary parsing fails silently | salary_min = null for valid salaries | Comprehensive test suite; log unparseable formats |
 | OnlineJobs.ph uses USD | Mixing currencies breaks averages | Explicit `salary_currency` column; filter/convert in marts |
-| Reddit text is unstructured | Can't reliably extract salary | Start with regex ("my salary is", "I earn"); accept low rate |
 | Skill extraction false positives | "Go to website" matches "Go" language | Word boundaries in regex (`\mgo\M`); patterns in seed file |
 
 ## Infrastructure

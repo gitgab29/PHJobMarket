@@ -33,3 +33,4 @@ beautifulsoup4==4.12.3
 # lxml — a faster HTML parser backend for BeautifulSoup. Pass it as:
 #   BeautifulSoup(html, "lxml")
 lxml==5.2.2
+

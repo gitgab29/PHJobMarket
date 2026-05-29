@@ -80,9 +80,6 @@ jobs:
               id BIGSERIAL PRIMARY KEY, source VARCHAR(50) NOT NULL,
               source_id VARCHAR(255) NOT NULL, scraped_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
               raw_data JSONB NOT NULL, UNIQUE (source, source_id));
-            CREATE TABLE raw.reddit_posts (
-              id BIGSERIAL PRIMARY KEY, source_id VARCHAR(255) NOT NULL UNIQUE,
-              scraped_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), raw_data JSONB NOT NULL);
             INSERT INTO raw.job_postings (source, source_id, raw_data) VALUES
             ('philjobnet', 'test_1', '{\"title\": \"Software Engineer\", \"company\": \"Test Corp\", \"location\": \"Makati City\", \"salary_raw\": \"PHP 30,000-50,000\"}'),
             ('kalibrr', 'test_2', '{\"title\": \"Data Analyst\", \"company\": \"Analytics PH\", \"location\": \"BGC, Taguig\", \"salary_raw\": \"40k-60k\", \"skills\": [\"Python\", \"SQL\"]}');

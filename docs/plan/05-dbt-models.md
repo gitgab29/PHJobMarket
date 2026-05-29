@@ -68,8 +68,6 @@ sources:
           - name: source_id
             tests:
               - not_null
-      - name: reddit_posts
-        description: Salary-related Reddit posts from r/phcareers
 ```
 
 ## 5.3 Staging Models

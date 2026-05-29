@@ -1,0 +1,37 @@
+# _staging__sources.yml
+#
+# This file tells dbt WHERE to find our raw data (the "source" tables that
+# scrapers write to). dbt uses this to:
+#   1. Generate the correct SQL references in staging models via {{ source() }}
+#   2. Run data quality tests on the raw tables themselves
+#   3. Show lineage in dbt docs (raw → staging → intermediate → marts)
+#
+# The double-underscore convention (__) marks files that configure dbt behavior
+# for this folder, rather than defining models.
+
+version: 2
+
+sources:
+  - name: raw
+    schema: raw       # matches the "raw" schema in Postgres (from migrations/001_raw_schema.sql)
+    description: Raw scraped data as JSONB blobs — written by the scrapers, never modified by hand
+
+    tables:
+      - name: job_postings
+        description: Job listings from PhilJobNet, Kalibrr, JobStreet, Indeed, OnlineJobs, Facebook
+        columns:
+          - name: source
+            description: Which scraper wrote this row
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['philjobnet', 'kalibrr', 'jobstreet', 'onlinejobs', 'indeed', 'facebook']
+          - name: source_id
+            description: The job's unique ID on its source site
+            tests:
+              - not_null
+          - name: raw_data
+            description: Full job data as a JSONB blob — all fields live here
+            tests:
+              - not_null
+

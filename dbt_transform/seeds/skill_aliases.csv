@@ -1,0 +1,97 @@
+pattern,canonical_name,category
+Python,Python,programming
+python3,Python,programming
+Python 3,Python,programming
+Java,Java,programming
+JavaScript,JavaScript,programming
+JS,JavaScript,programming
+TypeScript,TypeScript,programming
+TS,TypeScript,programming
+PHP,PHP,programming
+Ruby,Ruby,programming
+Go,Go,programming
+Golang,Go,programming
+Rust,Rust,programming
+C\+\+,C++,programming
+C#,C#,programming
+Swift,Swift,programming
+Kotlin,Kotlin,programming
+Scala,Scala,programming
+React,React,frontend
+ReactJS,React,frontend
+React\.js,React,frontend
+Vue,Vue.js,frontend
+Vue\.js,Vue.js,frontend
+VueJS,Vue.js,frontend
+Angular,Angular,frontend
+Next\.js,Next.js,frontend
+NextJS,Next.js,frontend
+Nuxt,Nuxt.js,frontend
+Svelte,Svelte,frontend
+HTML,HTML/CSS,frontend
+CSS,HTML/CSS,frontend
+Tailwind,Tailwind CSS,frontend
+Bootstrap,Bootstrap,frontend
+Node\.js,Node.js,backend
+NodeJS,Node.js,backend
+Express,Express.js,backend
+Django,Django,backend
+Flask,Flask,backend
+FastAPI,FastAPI,backend
+Spring,Spring,backend
+Spring Boot,Spring Boot,backend
+Laravel,Laravel,backend
+Rails,Ruby on Rails,backend
+Ruby on Rails,Ruby on Rails,backend
+PostgreSQL,PostgreSQL,database
+Postgres,PostgreSQL,database
+MySQL,MySQL,database
+MongoDB,MongoDB,database
+Redis,Redis,database
+Elasticsearch,Elasticsearch,database
+SQLite,SQLite,database
+Oracle,Oracle DB,database
+SQL Server,SQL Server,database
+SQL,SQL,database
+Docker,Docker,devops
+Kubernetes,Kubernetes,devops
+K8s,Kubernetes,devops
+Terraform,Terraform,devops
+Ansible,Ansible,devops
+Jenkins,Jenkins,devops
+CI/CD,CI/CD,devops
+GitHub Actions,GitHub Actions,devops
+GitLab CI,GitLab CI,devops
+AWS,AWS,cloud
+Amazon Web Services,AWS,cloud
+GCP,GCP,cloud
+Google Cloud,GCP,cloud
+Azure,Azure,cloud
+Heroku,Heroku,cloud
+Linux,Linux,systems
+Git,Git,tools
+Jira,Jira,tools
+Agile,Agile,methodology
+Scrum,Scrum,methodology
+REST,REST API,api
+REST API,REST API,api
+GraphQL,GraphQL,api
+Microservices,Microservices,architecture
+Machine Learning,Machine Learning,data
+ML,Machine Learning,data
+Deep Learning,Deep Learning,data
+TensorFlow,TensorFlow,data
+PyTorch,PyTorch,data
+Pandas,Pandas,data
+NumPy,NumPy,data
+Spark,Apache Spark,data
+Apache Spark,Apache Spark,data
+Kafka,Apache Kafka,data
+Apache Kafka,Apache Kafka,data
+dbt,dbt,data
+Airflow,Apache Airflow,data
+Apache Airflow,Apache Airflow,data
+Power BI,Power BI,data
+Tableau,Tableau,data
+Looker,Looker,data
+Excel,Excel,data

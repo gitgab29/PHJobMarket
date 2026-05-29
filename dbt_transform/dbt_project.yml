@@ -1,0 +1,43 @@
+# dbt_project.yml — the main dbt configuration file for this project
+#
+# Think of this as the "settings" file for dbt. It tells dbt:
+# - What the project is called (name)
+# - Which Postgres connection profile to use (profile)
+# - Where to find models, seeds, tests, and macros (the -paths settings)
+# - How to materialize each layer (view vs table vs ephemeral)
+#
+# Materialization types:
+#   view      → a virtual table. Recomputes on every query. No storage used.
+#               Good for staging — raw data is the source of truth anyway.
+#   table     → physically creates a table. Faster to query but uses storage.
+#               Good for marts — final reporting tables that dashboards query.
+#   ephemeral → not stored at all. Acts like a SQL CTE (subquery) that gets
+#               inlined into the next model. Good for intermediate transforms.
+
+name: ph_job_market
+version: "1.0.0"
+config-version: 2
+
+# Which connection profile to use (defined in profiles.yml)
+profile: ph_job_market
+
+# Directories for different types of dbt assets
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+# Where dbt stores compiled SQL and run artifacts (excluded from git)
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  ph_job_market:
+    staging:
+      +materialized: view
+      +schema: staging      # staging views go into the "staging" schema
+    intermediate:
+      +materialized: ephemeral   # intermediate models are CTEs, not stored
+    marts:
+      +materialized: table
+      +schema: warehouse    # mart tables go into the "warehouse" schema
