@@ -6,7 +6,7 @@
 
 ## Last updated: 2026-05-30
 
-## Current phase: Week 2 — More Scrapers + dbt Basics (IN PROGRESS)
+## Current phase: Week 3 — dbt Warehouse COMPLETE → next is Week 4 (Django API)
 
 ## What exists right now
 
@@ -50,14 +50,12 @@
 
 ## What does NOT exist yet
 
-- `dbt deps` not yet run — run `make dbt-deps` before `make dbt-run`
 - KalibrrScraper NOT yet verified against live site (requires Docker up + Playwright)
-- OnlineJobs: 120 records ✅ verified | Indeed: 32 records ✅ verified (bot ceiling)
 - No Airflow DAGs (`airflow/` empty)
 - No Django API (`api/` empty)
 - No React frontend (`frontend/` empty)
 - No `README.md`
-- dbt intermediate and mart models (Week 3)
+- `dim_industries` / `fct_salary_reports` / `fct_job_skills` from schema doc not built (no reliable industry data yet; skills modeled via fct_skill_demand instead)
 
 ## Week 3 additions
 
@@ -66,15 +64,22 @@
 | `scrapers/onlineJobs.py` | ✅ OnlineJobsScraper — CSS scraping, USD salary, is_remote=True, max 20 pages |
 | `scrapers/indeed.py` | ✅ IndeedScraper — CAPTCHA bail-out, 4–10s delay, dedup by source_id |
 | `Makefile` | ✅ Added: scrape-onlinejobs, scrape-indeed targets |
+| `docs/instructions/` | ✅ New folder for staged build instructions (+ README + 01-dbt-warehouse-layer.md) |
+| `dbt_transform/models/staging/stg_raw__{jobstreet,onlinejobs,indeed}.sql` | ✅ All 5 sources now staged (views) |
+| `dbt_transform/models/intermediate/*.sql` | ✅ int_jobs__unified, int_jobs__deduped, int_salaries__parsed, int_skills__extracted (ephemeral) |
+| `dbt_transform/models/marts/dim_*.sql` | ✅ dim_companies (740), dim_locations (220), dim_skills (74), dim_date (1461) |
+| `dbt_transform/models/marts/fct_*.sql` | ✅ fct_job_postings (2071), fct_skill_demand (68) |
+| `dbt_transform/models/marts/_marts__models.yml` | ✅ unique/not_null/accepted_values/relationships/accepted_range tests |
+| `.venv/` (gitignored) | ✅ dbt-postgres 1.10 / dbt-core 1.12.0b1 installed here; run via `.venv\Scripts\dbt.exe` |
 
-## Next steps (Week 3 continued)
+**Warehouse verified live**: `dbt build` → PASS=49 (11 models + 36 tests + 2 seeds), 0 errors.
+767 postings have a parsed salary (663 PHP + 104 USD).
 
-1. Live-test `make scrape-onlinejobs` and `make scrape-indeed`
-2. Run `make dbt-deps && make dbt-seed && make dbt-run` — verify staging views
-3. Write `int_jobs__unified`, `int_jobs__deduped` intermediate models
-4. Write `int_salaries__parsed`, `int_skills__extracted`
-5. Write `dim_companies`, `dim_locations`, `fct_job_postings`, `fct_skill_demand` mart models
-6. Full `dbt run` → check warehouse schema
+## Next steps (Week 4 — Django API)
+
+1. (Optional) Pin dbt-core to a stable 1.x (currently a beta resolved by pip); silence the generic-test `arguments:` deprecation warnings.
+2. Build the Django REST API in `api/` with `managed = False` models reading the `warehouse` schema (see `docs/plan/08-django-api.md`).
+3. Consider a `dim_industries` source + an `int_salaries__parsed` currency-normalization step (avg salary currently mixes hourly-USD with monthly-PHP).
 
 ## Key decisions locked in
 
@@ -106,3 +111,4 @@
 | 2026-05-30 | Fixed JobStreet pagination bug: `?pg=N` silently ignored by SEEK → replaced with `?page=N`. Added duplicate-ID guard to detect broken pagination early. Confirmed 930 unique records in raw.job_postings for source='jobstreet'. |
 | 2026-05-30 | Wrote OnlineJobsScraper (scrapers/onlineJobs.py) and IndeedScraper (scrapers/indeed.py). Added make scrape-onlinejobs and scrape-indeed targets. Both need live verification. |
 | 2026-05-30 | Live-tested both scrapers. OnlineJobs: 120 records (rate-limited to 4 pages/session, offset-path pagination /jobseekers/jobsearch/{offset}). Indeed: 32 records (bot-throttled after first keyword — known ceiling without stealth/proxies). All 5 scrapers verified. |
+| 2026-05-30 | Built the FULL dbt warehouse layer. Added 3 staging views (jobstreet/onlinejobs/indeed), 4 ephemeral intermediate models (unified/deduped/salaries-parsed/skills-extracted), 4 dims (companies/locations/skills/date), 2 facts (job_postings/skill_demand), and _marts__models.yml tests. Installed dbt-postgres in .venv. `dbt build` = PASS 49/49 against live DB. Fixed 2 salary-parser bugs found via tests: (1) "₱45,000 + ₱20,000" glued into 4.5B → truncate at first '+'; (2) "Day 1 HMO" perk strings parsed "1" as salary → added money-signal gate. Created docs/instructions/ folder + instruction 01. |

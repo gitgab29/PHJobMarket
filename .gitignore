@@ -29,6 +29,7 @@ dbt_transform/target/
 dbt_transform/dbt_packages/
 dbt_transform/logs/
 dbt_transform/profiles.yml
+dbt_transform/.user.yml
 
 # Great Expectations
 dbt_transform/great_expectations/uncommitted/

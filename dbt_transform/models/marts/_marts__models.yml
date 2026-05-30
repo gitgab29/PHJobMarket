@@ -1,0 +1,100 @@
+# _marts__models.yml
+#
+# Data-quality tests for the warehouse (mart) layer. dbt runs these with
+# `dbt test` and fails loudly if reality doesn't match our expectations — far
+# better than a dashboard quietly charting garbage.
+#
+# Test types used here:
+#   unique / not_null      — built-in column tests (a key must be present & unique)
+#   accepted_values        — the column may only contain this fixed set of values
+#   relationships          — every foreign key must point at a real dimension row
+#   dbt_utils.accepted_range — numeric sanity bounds (from the dbt_utils package)
+
+version: 2
+
+models:
+  - name: fct_job_postings
+    description: One row per deduped job posting — the central fact table.
+    columns:
+      - name: job_key
+        description: Surrogate key (the raw_id of the deduped posting).
+        tests: [unique, not_null]
+      - name: source
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['philjobnet', 'kalibrr', 'jobstreet', 'onlinejobs', 'indeed', 'facebook']
+      - name: title
+        tests: [not_null]
+      - name: company_key
+        description: FK → dim_companies. NULL allowed (some postings omit company).
+        tests:
+          - relationships:
+              to: ref('dim_companies')
+              field: company_key
+              config:
+                where: "company_key is not null"
+      - name: location_key
+        description: FK → dim_locations. NULL allowed (remote/locationless postings).
+        tests:
+          - relationships:
+              to: ref('dim_locations')
+              field: location_key
+              config:
+                where: "location_key is not null"
+      - name: salary_min
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 10000000
+              config:
+                where: "salary_min is not null"
+      - name: salary_currency
+        tests:
+          - accepted_values:
+              values: ['PHP', 'USD']
+
+  - name: dim_companies
+    columns:
+      - name: company_key
+        tests: [unique, not_null]
+      - name: company_name
+        tests: [not_null]
+      - name: company_lower
+        description: Lowercased natural key used to join from the fact table.
+        tests: [unique, not_null]
+
+  - name: dim_locations
+    columns:
+      - name: location_key
+        tests: [unique, not_null]
+      - name: location_raw
+        description: Natural key used to join from the fact table.
+        tests: [unique, not_null]
+
+  - name: dim_skills
+    columns:
+      - name: skill_key
+        tests: [unique, not_null]
+      - name: skill_name
+        tests: [unique, not_null]
+
+  - name: dim_date
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+      - name: full_date
+        tests: [unique, not_null]
+
+  - name: fct_skill_demand
+    columns:
+      - name: id
+        tests: [unique, not_null]
+      - name: skill_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_skills')
+              field: skill_key
+      - name: posting_count
+        tests: [not_null]
