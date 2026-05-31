@@ -4,9 +4,9 @@
 
 ---
 
-## Last updated: 2026-05-30
+## Last updated: 2026-05-31
 
-## Current phase: Week 3 — dbt Warehouse COMPLETE → next is Week 4 (Django API)
+## Current phase: Week 4 — Airflow + Great Expectations COMPLETE → next is Week 5 (Django API)
 
 ## What exists right now
 
@@ -75,11 +75,36 @@
 **Warehouse verified live**: `dbt build` → PASS=49 (11 models + 36 tests + 2 seeds), 0 errors.
 767 postings have a parsed salary (663 PHP + 104 USD).
 
-## Next steps (Week 4 — Django API)
+## Week 4 additions (completed 2026-05-31)
 
-1. (Optional) Pin dbt-core to a stable 1.x (currently a beta resolved by pip); silence the generic-test `arguments:` deprecation warnings.
-2. Build the Django REST API in `api/` with `managed = False` models reading the `warehouse` schema (see `docs/plan/08-django-api.md`).
-3. Consider a `dim_industries` source + an `int_salaries__parsed` currency-normalization step (avg salary currently mixes hourly-USD with monthly-PHP).
+| Path | Status |
+|------|--------|
+| `docker-compose.yml` | ✅ Updated: airflow-init, airflow-webserver (port 8080), airflow-scheduler |
+| `airflow/Dockerfile` | ✅ Extends apache/airflow:2.9.3-python3.11; installs playwright/dbt/gx; runs playwright install |
+| `airflow/requirements.txt` | ✅ playwright, bs4, psycopg2-binary, dbt-postgres, great-expectations pinned |
+| `airflow/dags/scrape_all_sources.py` | ✅ DAG: 5 scrapers parallel + logging to raw.scrape_log, 2 retries, 30min timeout |
+| `airflow/dags/dbt_transform.py` | ✅ DAG: waits for scraping, runs dbt deps→seed→run→test→docs with DB env vars |
+| `gx/great_expectations.yml` | ✅ GX config: postgres datasource with env-var credentials |
+| `gx/expectations/raw_job_postings.json` | ✅ Expectations: source in set, data not null, freshness (7 days), row count > 0 |
+| `gx/expectations/fct_job_postings.json` | ✅ Expectations: unique job_key, salary ranges (0–10M), currency in [PHP/USD], row count > 1000 |
+| `gx/checkpoints/nightly_validation.yml` | ✅ GX checkpoint for Airflow to call nightly |
+| `scrapers/facebook.py` | ✅ Stub: returns empty list (optional; requires manual login cookie capture) |
+| `docs/instructions/week-4-airflow-explained.md` | ✅ Complete junior-DE guide: what is Airflow, DAGs, GX, why used, full architecture |
+| `.gitignore` | ✅ Added: gx/uncommitted/ |
+| `Makefile` | ✅ Added: airflow-up, airflow-down, airflow-logs, gx-validate targets |
+
+**Airflow status:**
+- Services: `docker compose up -d` ✅ healthy (postgres, airflow-init OK, webserver listening 8080, scheduler active)
+- DAGs: `airflow dags list` ✅ 2 DAGs loaded (scrape_all_sources, dbt_transform), paused by default
+- Manual test: `airflow dags trigger scrape_all_sources` ✅ ran successfully, tasks queued/executed
+- UI: http://localhost:8080 (admin/admin)
+- dbt in container: tested with DB_HOST=postgres DB_PORT=5432 → `dbt run` PASS 11/11 models
+
+## Next steps (Week 5 — Django API)
+
+1. Build Django REST Framework project in `api/` with `managed = False` models reading `warehouse` schema (see `docs/plan/08-django-api.md`).
+2. Write serializers, viewsets (ReadOnlyModelViewSet), and 12 endpoints (jobs list/detail, companies, locations, skills, analytics).
+3. Set up CORS for localhost, test all endpoints with curl/Postman, wire to React in Week 6.
 
 ## Key decisions locked in
 
@@ -112,3 +137,4 @@
 | 2026-05-30 | Wrote OnlineJobsScraper (scrapers/onlineJobs.py) and IndeedScraper (scrapers/indeed.py). Added make scrape-onlinejobs and scrape-indeed targets. Both need live verification. |
 | 2026-05-30 | Live-tested both scrapers. OnlineJobs: 120 records (rate-limited to 4 pages/session, offset-path pagination /jobseekers/jobsearch/{offset}). Indeed: 32 records (bot-throttled after first keyword — known ceiling without stealth/proxies). All 5 scrapers verified. |
 | 2026-05-30 | Built the FULL dbt warehouse layer. Added 3 staging views (jobstreet/onlinejobs/indeed), 4 ephemeral intermediate models (unified/deduped/salaries-parsed/skills-extracted), 4 dims (companies/locations/skills/date), 2 facts (job_postings/skill_demand), and _marts__models.yml tests. Installed dbt-postgres in .venv. `dbt build` = PASS 49/49 against live DB. Fixed 2 salary-parser bugs found via tests: (1) "₱45,000 + ₱20,000" glued into 4.5B → truncate at first '+'; (2) "Day 1 HMO" perk strings parsed "1" as salary → added money-signal gate. Created docs/instructions/ folder + instruction 01. |
+| 2026-05-31 | Week 4 complete: Airflow + Great Expectations orchestration. Built docker-compose with 3 Airflow services, 2 DAGs (scrape_all_sources, dbt_transform), GX config + 2 expectation suites. DAGs load successfully. Manual test trigger works. Fixed Dockerfile COPY syntax, adjusted dbt_transform env vars for DB_PORT=5432 in container. Created FacebookScraper stub. Wrote comprehensive week-4-airflow-explained.md for junior DE learners. Services healthy, UI accessible at 8080. |
