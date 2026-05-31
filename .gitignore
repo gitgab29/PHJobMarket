@@ -33,6 +33,7 @@ dbt_transform/.user.yml
 
 # Great Expectations
 dbt_transform/great_expectations/uncommitted/
+gx/uncommitted/
 
 # Playwright
 playwright-report/

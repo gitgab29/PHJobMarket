@@ -1,86 +1,58 @@
-# =============================================================================
-# docker-compose.yml — Week 1: Postgres only
-#
-# Docker Compose is a tool that lets you define and run one or more containers
-# using a single config file. Each "service" below is one container.
-#
-# This week we only need Postgres. Airflow, Django, and the React frontend
-# will be added in later weeks once we have scrapers working locally.
-#
-# HOW TO USE:
-#   make up    → start Postgres in the background
-#   make down  → stop and remove the container
-#   make psql  → open a SQL terminal inside Postgres
-# =============================================================================
-
 services:
 
-  # ---------------------------------------------------------------------------
-  # postgres — our database
-  #
-  # We use the official Postgres 16 "alpine" image. Alpine is a tiny Linux
-  # distro (~5MB) — it makes the image much smaller than the default.
-  #
-  # On first start, Postgres automatically runs every .sql file it finds
-  # inside /docker-entrypoint-initdb.d/. We mount our ./migrations folder
-  # there, so 001_raw_schema.sql runs automatically and creates our tables.
-  # ---------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
-
     environment:
-      # These three variables configure the default database Postgres creates.
-      # They match what's in .env.example — change them there if you ever
-      # want a different username/password.
       POSTGRES_DB: phjobmarket
       POSTGRES_USER: phjobmarket
       POSTGRES_PASSWORD: phjobmarket
-      # POSTGRES_HOST_AUTH_METHOD: trust
-      #
-      # On Docker Desktop for Windows (WSL2), connections from the Windows
-      # host arrive at Postgres with a Docker-internal IP (172.17.x.x), not
-      # 127.0.0.1. The default pg_hba.conf only trusts 127.0.0.1, so external
-      # connections hit the "scram-sha-256" rule and fail even with the right
-      # password. Setting this to "trust" skips password checks entirely for
-      # all TCP connections — fine for a local-only dev database.
       POSTGRES_HOST_AUTH_METHOD: trust
-
     ports:
-      # Format is "host_port:container_port".
-      # We use 15432 on the host (your machine) to avoid conflicts.
-      # Port 5432 and 5433 are both taken by a local PostgreSQL installation.
-      # Inside the container, Postgres still listens on its normal 5432.
-      # DB_URL must use port 15432: postgresql://...@127.0.0.1:15432/phjobmarket
       - "15432:5432"
-
     volumes:
-      # Volume 1: named volume for data persistence.
-      # Without this, every time you run `make down && make up`, your database
-      # would be wiped. This tells Docker to store the actual data files on
-      # your machine (managed by Docker) so they survive restarts.
       - pgdata:/var/lib/postgresql/data
-
-      # Volume 2: mount our migrations folder into the init directory.
-      # Postgres runs every .sql file here automatically on first boot.
-      # This is how 001_raw_schema.sql creates our raw.job_postings table
-      # without us doing anything manually.
       - ./migrations:/docker-entrypoint-initdb.d
-
     healthcheck:
-      # Docker will run this command every 5 seconds to check if Postgres
-      # is ready to accept connections. Other services can use
-      # "depends_on: postgres: condition: service_healthy" to wait for this.
-      # pg_isready is a built-in Postgres utility that checks connectivity.
       test: ["CMD-SHELL", "pg_isready -U phjobmarket"]
       interval: 5s
       retries: 5
 
-# -----------------------------------------------------------------------------
-# Named volumes
-#
-# This tells Docker to manage a volume called "pgdata". Docker stores it
-# somewhere on your machine (you don't need to know where). The important
-# thing is: your data persists between `make down` / `make up` cycles.
-# -----------------------------------------------------------------------------
+  airflow-init:
+    build: { context: ., dockerfile: airflow/Dockerfile }
+    entrypoint: bash -c "airflow db init && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"
+    environment: &airflow-env
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://phjobmarket:phjobmarket@postgres:5432/phjobmarket
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+      DB_HOST: postgres
+      DB_USER: phjobmarket
+      DB_PASSWORD: phjobmarket
+      DB_NAME: phjobmarket
+    volumes: &airflow-vols
+      - ./airflow/dags:/opt/airflow/dags
+      - ./scrapers:/opt/airflow/scrapers
+      - ./dbt_transform:/opt/airflow/dbt_transform
+      - ./gx:/opt/airflow/gx
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  airflow-webserver:
+    build: { context: ., dockerfile: airflow/Dockerfile }
+    command: airflow webserver --port 8080
+    environment: *airflow-env
+    ports: ["8080:8080"]
+    volumes: *airflow-vols
+    depends_on:
+      airflow-init: { condition: service_completed_successfully }
+
+  airflow-scheduler:
+    build: { context: ., dockerfile: airflow/Dockerfile }
+    command: airflow scheduler
+    environment: *airflow-env
+    volumes: *airflow-vols
+    depends_on:
+      airflow-init: { condition: service_completed_successfully }
+
 volumes:
   pgdata:

@@ -1,0 +1,88 @@
+{
+  "expectation_suite_name": "fct_job_postings",
+  "expectations": [
+    {
+      "expectation_type": "expect_table_row_count_to_be_between",
+      "kwargs": {
+        "min_value": 1000,
+        "result_format": "SUMMARY"
+      },
+      "meta": {
+        "description": "Warehouse should have at least 1000 job postings (sanity check)"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "job_key",
+        "result_format": "SUMMARY"
+      },
+      "meta": {
+        "description": "Every job posting must have a unique key"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_unique",
+      "kwargs": {
+        "column": "job_key",
+        "result_format": "SUMMARY"
+      },
+      "meta": {
+        "description": "Job keys must be unique (no duplicates)"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "title",
+        "result_format": "SUMMARY"
+      },
+      "meta": {
+        "description": "Every job must have a title"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "salary_currency",
+        "value_set": [
+          "PHP",
+          "USD"
+        ],
+        "result_format": "SUMMARY"
+      },
+      "meta": {
+        "description": "Salary currency must be PHP or USD (no mixing)"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "salary_min",
+        "min_value": 0,
+        "max_value": 10000000,
+        "result_format": "SUMMARY",
+        "allow_cross_type_comparisons": true
+      },
+      "meta": {
+        "description": "Salary minimum must be positive and reasonable (0 to 10M PHP)"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "salary_max",
+        "min_value": 0,
+        "max_value": 10000000,
+        "result_format": "SUMMARY",
+        "allow_cross_type_comparisons": true
+      },
+      "meta": {
+        "description": "Salary maximum must be positive and reasonable"
+      }
+    }
+  ],
+  "meta": {
+    "great_expectations_version": "0.18.19"
+  }
+}
