@@ -14,7 +14,7 @@
 # .PHONY tells Make that these targets are not files — they're just commands.
 # Without this, Make would check if a file named "up" exists and skip the
 # command if it did. We never want that behavior here.
-.PHONY: up down logs psql scrape-philjobnet scrape-kalibrr scrape-jobstreet scrape-onlinejobs scrape-indeed dbt-deps dbt-seed dbt-run dbt-test dbt-debug test airflow-up airflow-down airflow-logs gx-validate
+.PHONY: up down logs psql scrape-philjobnet scrape-kalibrr scrape-jobstreet scrape-onlinejobs scrape-indeed dbt-deps dbt-seed dbt-run dbt-test dbt-debug test airflow-up airflow-down airflow-logs gx-validate api-setup api-run api-test
 
 # -----------------------------------------------------------------------------
 # make up
@@ -183,3 +183,40 @@ airflow-logs:
 # -----------------------------------------------------------------------------
 gx-validate:
 	cd gx && great_expectations checkpoint run nightly_validation
+
+# =============================================================================
+# DJANGO API TARGETS (Week 5)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# make api-setup
+# Installs Django dependencies and generates necessary files.
+# Run once: pip install -r api/requirements.txt
+# Creates .env from .env.example if not exists.
+# -----------------------------------------------------------------------------
+api-setup:
+	pip install -r api/requirements.txt
+	cd api && python manage.py migrate
+
+# -----------------------------------------------------------------------------
+# make api-run
+# Starts the Django development server on http://127.0.0.1:8000/
+# API root at /api/v1/
+# Requires: make up (Postgres running) and make api-setup (dependencies installed)
+# Press Ctrl+C to stop.
+# -----------------------------------------------------------------------------
+api-run:
+	cd api && python manage.py runserver 0.0.0.0:8000
+
+# -----------------------------------------------------------------------------
+# make api-test
+# Tests all API endpoints with curl (basic smoke test).
+# Requires: make api-run (API running in another terminal)
+# Tests jobs list, job detail, companies, locations, skills, analytics endpoints.
+# -----------------------------------------------------------------------------
+api-test:
+	@echo "Testing API endpoints..."
+	@curl -s http://127.0.0.1:8000/api/v1/jobs/ | python -m json.tool | head -20 && echo "\n✅ jobs list"
+	@curl -s http://127.0.0.1:8000/api/v1/companies/ | python -m json.tool | head -20 && echo "\n✅ companies list"
+	@curl -s http://127.0.0.1:8000/api/v1/skills/top/ | python -m json.tool | head -20 && echo "\n✅ skills top"
+	@curl -s http://127.0.0.1:8000/api/v1/analytics/summary/ | python -m json.tool && echo "✅ analytics summary"
