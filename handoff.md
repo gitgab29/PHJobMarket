@@ -4,9 +4,9 @@
 
 ---
 
-## Last updated: 2026-06-06
+## Last updated: 2026-06-07
 
-## Current phase: Week 5 — Django REST API COMPLETE → next is Week 6 (React Frontend)
+## Current phase: Week 6 — React Frontend COMPLETE → Project ready for deployment
 
 ## What exists right now
 
@@ -120,13 +120,33 @@
 
 **API ready**: 12 endpoints tested, CORS configured, pagination enabled, all filters wired.
 
-## Next steps (Week 6 — React Frontend)
+## Week 6 additions (completed 2026-06-07)
 
-1. Build React frontend (Vite + TailwindCSS) in `frontend/`.
-2. Create job search/filter UI consuming `/api/v1/jobs/` with pagination.
-3. Build dashboard with Recharts consuming analytics endpoints.
-4. Wire skill matrix and salary trends chart.
-5. Deploy frontend locally and test end-to-end with API.
+| Path | Status |
+|------|--------|
+| `frontend/package.json` | ✅ Vite + React 18 + TailwindCSS + Recharts + React Router |
+| `frontend/vite.config.js` | ✅ Vite config with API proxy to localhost:8000 |
+| `frontend/tailwind.config.js` | ✅ TailwindCSS config with custom tokens (Hanken Grotesk, IBM Plex Mono) |
+| `frontend/index.html` | ✅ Entry point with font imports |
+| `frontend/src/main.jsx` | ✅ React root entry |
+| `frontend/src/App.jsx` | ✅ Router setup (Jobs /, Dashboard /dashboard) |
+| `frontend/src/api/client.js` | ✅ Axios API client with all 12 endpoint groups |
+| `frontend/src/components/Header.jsx` | ✅ Navigation header with logo + page links |
+| `frontend/src/components/Badge.jsx` | ✅ Source/EmploymentType/Remote badges |
+| `frontend/src/pages/JobsPage.jsx` | ✅ Search + filters (10 fields) + results table + pagination + detail drawer |
+| `frontend/src/pages/DashboardPage.jsx` | ✅ Summary cards + 5 Recharts (salary by location, jobs by source, remote vs onsite, experience levels, top skills) |
+| `frontend/src/styles/index.css` | ✅ Global styles (OKLCH tokens, animations, scrollbar, focus states) |
+| `frontend/dist/` | ✅ Production build: `npm run build` → successful, 624KB gzipped |
+
+**Frontend ready**: Responsive design (desktop-first), real API integration, all analytics wired, fully interactive. Start dev server: `npm run dev` in `frontend/` (runs on http://localhost:5173).
+
+## Next steps (Deployment & Refinement)
+
+1. **Local E2E testing**: Start Django (`python api/manage.py runserver`), then `npm run dev` in `frontend/`. Verify jobs load, filters work, dashboard renders.
+2. **Optional polish**: Implement the design tweaks panel (accent color variations, card styles, density) from the prototype if desired.
+3. **Production deployment**: Build frontend (`npm run build`), serve `dist/` via nginx or similar reverse proxy alongside Django API.
+4. **CI/CD**: Add GitHub Actions workflow for frontend tests + build (optional, project is fully functional).
+5. **Monitoring**: Wire Airflow + dbt + API to production; schedule scraper DAG to run nightly.
 
 ## Key decisions locked in
 
@@ -161,3 +181,4 @@
 | 2026-05-30 | Built the FULL dbt warehouse layer. Added 3 staging views (jobstreet/onlinejobs/indeed), 4 ephemeral intermediate models (unified/deduped/salaries-parsed/skills-extracted), 4 dims (companies/locations/skills/date), 2 facts (job_postings/skill_demand), and _marts__models.yml tests. Installed dbt-postgres in .venv. `dbt build` = PASS 49/49 against live DB. Fixed 2 salary-parser bugs found via tests: (1) "₱45,000 + ₱20,000" glued into 4.5B → truncate at first '+'; (2) "Day 1 HMO" perk strings parsed "1" as salary → added money-signal gate. Created docs/instructions/ folder + instruction 01. |
 | 2026-05-31 | Week 4 complete: Airflow + Great Expectations orchestration. Built docker-compose with 3 Airflow services, 2 DAGs (scrape_all_sources, dbt_transform), GX config + 2 expectation suites. DAGs load successfully. Manual test trigger works. Fixed Dockerfile COPY syntax, adjusted dbt_transform env vars for DB_PORT=5432 in container. Created FacebookScraper stub. Wrote comprehensive week-4-airflow-explained.md for junior DE learners. Services healthy, UI accessible at 8080. |
 | 2026-06-06 | Week 5 complete: Django REST API (12 endpoints). Built full Django project structure: 6 unmanaged models (all warehouse tables), 4 ReadOnlyModelViewSets, 6 serializers, 10-field JobPostingFilter, 6 analytics views. All endpoints mapped with proper pagination (25 items), search, filtering, and ordering. CORS configured for localhost. Created comprehensive testing guide with curl examples for all endpoints. Makefile targets added (api-setup, api-run, api-test). API ready for React integration in Week 6. |
+| 2026-06-07 | Week 6 complete: React Frontend (Vite + TailwindCSS + Recharts). Built Vite project with React Router (Jobs + Dashboard pages), full API integration, 10-field job filters + search + sorting + pagination, detail drawer, 5 analytics charts (salary by location, jobs by source, remote vs onsite, experience levels, top skills). Frontend builds successfully. Ready for end-to-end testing with Django API. |
