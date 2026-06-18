@@ -77,6 +77,17 @@ export default function JobsPage() {
     return minStr || maxStr
   }
 
+  function formatDate(dateStr) {
+    if (!dateStr) return 'Date not available'
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return 'Date not available'
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
   const pageSize = 25
   const totalPages = Math.ceil(totalCount / pageSize)
 
@@ -302,7 +313,7 @@ export default function JobsPage() {
 
       {/* Job Detail Modal/Drawer */}
       {selectedJob && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end">
           <div className="bg-white w-full max-w-md max-h-screen overflow-y-auto">
             <div className="p-6">
               <button
@@ -339,11 +350,7 @@ export default function JobsPage() {
                 <div>
                   <h3 className="text-sm font-medium text-slate-700 mb-1">Posted</h3>
                   <p className="text-slate-600">
-                    {new Date(selectedJob.date_posted).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    {formatDate(selectedJob.date_posted)}
                   </p>
                 </div>
 

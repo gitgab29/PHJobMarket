@@ -19,7 +19,7 @@ class DimCompany(models.Model):
 
 class DimLocation(models.Model):
     location_key = models.AutoField(primary_key=True)
-    raw_location = models.CharField(max_length=500)
+    location_raw = models.CharField(max_length=500)
     city = models.CharField(max_length=200, null=True)
     province = models.CharField(max_length=200, null=True)
     region = models.CharField(max_length=200, null=True)
@@ -31,7 +31,7 @@ class DimLocation(models.Model):
         db_table = "dim_locations"
 
     def __str__(self):
-        return f"{self.city}, {self.province}" if self.city else self.raw_location
+        return f"{self.city}, {self.province}" if self.city else self.location_raw
 
 
 class DimSkill(models.Model):

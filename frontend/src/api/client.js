@@ -1,9 +1,7 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
 const client = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1`,
+  baseURL: '/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -19,12 +17,12 @@ export const jobsAPI = {
 }
 
 export const analyticsAPI = {
-  dashboard: () => client.get('/analytics/dashboard_summary/'),
-  salaryByLocation: () => client.get('/analytics/salary_by_location/'),
-  salaryByExperience: () => client.get('/analytics/salary_by_experience/'),
-  jobsBySource: () => client.get('/analytics/jobs_by_source/'),
-  remoteVsOnsite: () => client.get('/analytics/remote_vs_onsite/'),
-  skillTrends: () => client.get('/analytics/skill_trends/'),
+  dashboard: () => client.get('/analytics/summary/'),
+  salaryByLocation: () => client.get('/analytics/salary-by-location/'),
+  salaryByExperience: () => client.get('/analytics/salary-by-experience/'),
+  jobsBySource: () => client.get('/analytics/jobs-by-source/'),
+  remoteVsOnsite: () => client.get('/analytics/remote-vs-onsite/'),
+  skillTrends: () => client.get('/analytics/skill-trends/'),
 }
 
 export default client
