@@ -25,25 +25,43 @@ export function SourceBadge({ source }) {
 }
 
 export function EmploymentTypeBadge({ type }) {
+  if (!type) return null
+
+  // Normalize messy real-world values ("full time", "full-time+2", "permanent"…)
+  // into a small set of color buckets.
+  const normalized = type.toLowerCase()
+  const bucket =
+    normalized.includes('full') ? 'fulltime'
+    : normalized.includes('part') ? 'parttime'
+    : normalized.includes('permanent') ? 'permanent'
+    : normalized.includes('contract') ? 'contract'
+    : normalized.includes('freelance') || normalized.includes('gig') ? 'freelance'
+    : normalized.includes('intern') || normalized.includes('ojt') ? 'internship'
+    : normalized.includes('project') ? 'project'
+    : 'other'
+
   const colors = {
     fulltime: 'bg-blue-50 text-blue-700 border border-blue-200',
-    'part-time': 'bg-amber-50 text-amber-700 border border-amber-200',
+    parttime: 'bg-amber-50 text-amber-700 border border-amber-200',
+    permanent: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
     contract: 'bg-purple-50 text-purple-700 border border-purple-200',
     freelance: 'bg-green-50 text-green-700 border border-green-200',
-    temporary: 'bg-red-50 text-red-700 border border-red-200',
+    internship: 'bg-cyan-50 text-cyan-700 border border-cyan-200',
+    project: 'bg-rose-50 text-rose-700 border border-rose-200',
+    other: 'bg-slate-100 text-slate-700 border border-slate-200',
   }
 
-  const displayText = {
-    fulltime: 'Full-Time',
-    'part-time': 'Part-Time',
-    contract: 'Contract',
-    freelance: 'Freelance',
-    temporary: 'Temporary',
-  }
+  // Title-case for display, strip trailing "+N" noise from messy source data.
+  const label = type
+    .replace(/\+\d+$/, '')
+    .split(/[\s/-]+/)
+    .filter(Boolean)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
 
   return (
-    <span className={`inline-block px-2 py-1 text-xs font-medium rounded-sm ${colors[type] || 'bg-slate-100 text-slate-800'}`}>
-      {displayText[type] || type}
+    <span className={`inline-block px-2 py-1 text-xs font-medium rounded-sm ${colors[bucket]}`}>
+      {label}
     </span>
   )
 }

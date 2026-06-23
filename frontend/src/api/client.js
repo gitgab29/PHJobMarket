@@ -20,6 +20,7 @@ export const analyticsAPI = {
   dashboard: () => client.get('/analytics/summary/'),
   salaryByLocation: () => client.get('/analytics/salary-by-location/'),
   salaryByExperience: () => client.get('/analytics/salary-by-experience/'),
+  salaryBySource: () => client.get('/analytics/salary-by-source/'),
   jobsBySource: () => client.get('/analytics/jobs-by-source/'),
   remoteVsOnsite: () => client.get('/analytics/remote-vs-onsite/'),
   skillTrends: () => client.get('/analytics/skill-trends/'),

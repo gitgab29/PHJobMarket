@@ -17,7 +17,7 @@ class JobPostingViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = FctJobPosting.objects.select_related("company", "location").all()
     filterset_class = JobPostingFilter
     search_fields = ["title", "description", "company__company_name"]
-    ordering_fields = ["salary_min", "salary_max", "date_posted_key"]
+    ordering_fields = ["salary_min", "salary_max", "date_posted_key", "company__company_name"]
     ordering = ["-date_posted_key"]
 
     def get_serializer_class(self):

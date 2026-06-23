@@ -35,9 +35,18 @@ def salary_by_location(request):
         .values("location__city", "location__region")
         .annotate(avg_min=Avg("salary_min"), avg_max=Avg("salary_max"), job_count=Count("job_key"))
         .filter(job_count__gte=5)
-        .order_by("-avg_max")
+        .order_by("-avg_min")
     )
-    return Response(list(data))
+    return Response([
+        {
+            "city": r["location__city"],
+            "region": r["location__region"],
+            "avg_salary_min": float(r["avg_min"]) if r["avg_min"] is not None else None,
+            "avg_salary_max": float(r["avg_max"]) if r["avg_max"] is not None else None,
+            "job_count": r["job_count"],
+        }
+        for r in data
+    ])
 
 
 @api_view(["GET"])
@@ -52,7 +61,40 @@ def salary_by_experience(request):
         .annotate(avg_min=Avg("salary_min"), avg_max=Avg("salary_max"), job_count=Count("job_key"))
         .order_by("avg_min")
     )
-    return Response(list(data))
+    return Response([
+        {
+            "experience_level": r["experience_level"],
+            "avg_salary_min": float(r["avg_min"]) if r["avg_min"] is not None else None,
+            "avg_salary_max": float(r["avg_max"]) if r["avg_max"] is not None else None,
+            "job_count": r["job_count"],
+        }
+        for r in data
+    ])
+
+
+@api_view(["GET"])
+def salary_by_source(request):
+    """Average PHP monthly salary per source — used by the dashboard in place of
+    experience level, which is not populated in the warehouse yet."""
+    data = (
+        FctJobPosting.objects.filter(
+            salary_min__isnull=False,
+            salary_currency="PHP",
+            salary_period="monthly",
+        )
+        .values("source")
+        .annotate(avg_min=Avg("salary_min"), avg_max=Avg("salary_max"), job_count=Count("job_key"))
+        .order_by("-avg_min")
+    )
+    return Response([
+        {
+            "source": r["source"],
+            "avg_salary_min": float(r["avg_min"]) if r["avg_min"] is not None else None,
+            "avg_salary_max": float(r["avg_max"]) if r["avg_max"] is not None else None,
+            "job_count": r["job_count"],
+        }
+        for r in data
+    ])
 
 
 @api_view(["GET"])

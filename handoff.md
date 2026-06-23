@@ -4,9 +4,9 @@
 
 ---
 
-## Last updated: 2026-06-07
+## Last updated: 2026-06-23
 
-## Current phase: Week 6 — React Frontend COMPLETE → Project ready for deployment
+## Current phase: Week 6 — Frontend wired to live API (all features working) → Project ready for deployment
 
 ## What exists right now
 
@@ -142,7 +142,7 @@
 
 ## Next steps (Deployment & Refinement)
 
-1. **Local E2E testing**: Start Django (`python api/manage.py runserver`), then `npm run dev` in `frontend/`. Verify jobs load, filters work, dashboard renders.
+1. **Local E2E testing**: ✅ Frontend↔API contract verified 2026-06-23 (all endpoints, filters, sorts, charts return correct data). To run: start Django (`cd api && python manage.py runserver`, reads `.env` → DB on port 15432), then `npm run dev` in `frontend/` (http://localhost:5173). Note: Postgres runs in Docker mapped to host port **15432**, and `.env` already sets `DB_PORT=15432` for the API.
 2. **Optional polish**: Implement the design tweaks panel (accent color variations, card styles, density) from the prototype if desired.
 3. **Production deployment**: Build frontend (`npm run build`), serve `dist/` via nginx or similar reverse proxy alongside Django API.
 4. **CI/CD**: Add GitHub Actions workflow for frontend tests + build (optional, project is fully functional).
@@ -182,3 +182,5 @@
 | 2026-05-31 | Week 4 complete: Airflow + Great Expectations orchestration. Built docker-compose with 3 Airflow services, 2 DAGs (scrape_all_sources, dbt_transform), GX config + 2 expectation suites. DAGs load successfully. Manual test trigger works. Fixed Dockerfile COPY syntax, adjusted dbt_transform env vars for DB_PORT=5432 in container. Created FacebookScraper stub. Wrote comprehensive week-4-airflow-explained.md for junior DE learners. Services healthy, UI accessible at 8080. |
 | 2026-06-06 | Week 5 complete: Django REST API (12 endpoints). Built full Django project structure: 6 unmanaged models (all warehouse tables), 4 ReadOnlyModelViewSets, 6 serializers, 10-field JobPostingFilter, 6 analytics views. All endpoints mapped with proper pagination (25 items), search, filtering, and ordering. CORS configured for localhost. Created comprehensive testing guide with curl examples for all endpoints. Makefile targets added (api-setup, api-run, api-test). API ready for React integration in Week 6. |
 | 2026-06-07 | Week 6 complete: React Frontend (Vite + TailwindCSS + Recharts). Built Vite project with React Router (Jobs + Dashboard pages), full API integration, 10-field job filters + search + sorting + pagination, detail drawer, 5 analytics charts (salary by location, jobs by source, remote vs onsite, experience levels, top skills). Frontend builds successfully. Ready for end-to-end testing with Django API. |
+| 2026-06-19 | No code changes. Created `PROJECT_REVIEW.md` — a full end-to-end study/interview-prep doc (pitch, architecture, layer walkthrough, key decisions, metrics, Q&A, honest limitations, demo steps) grounded in the actual code. For re-onboarding + presenting the project to employers before deployment work begins. |
+| 2026-06-23 | Fixed the frontend↔API contract — the frontend had been built against an assumed API shape that didn't match the real Django responses, so most features silently returned blank/zero. **JobsPage:** corrected field names (`job_key`/`city`/`region`/`date_posted_key`), fixed filter params (`salary_min_gte`/`salary_max_lte`/`city`), fixed sort values (`-date_posted_key`/`company__company_name`), company dropdown now reads `company_name`, employment-type options now match real warehouse values (`full time`/`permanent`/`contractual`…), `date_posted_key` (YYYYMMDD int) now formatted correctly, decimal salaries coerced to numbers, added Clear-filters + click-outside drawer close. **DashboardPage:** rewrote all 5 summary cards + every chart `dataKey` to match real responses; replaced the always-empty Salary-by-Experience chart (experience_level is 100% NULL) with a new **Average Salary by Source** chart; Top Skills now uses the `skills/top/` endpoint. **API:** analytics views (`salary_by_location`, `salary_by_experience`) now return clean numeric keys + cast Decimal→float; added `analytics/salary-by-source/` endpoint; added `company__company_name` to job ordering fields; added `StandardPagination` (`page_size` query param, max 2000) so filter dropdowns load all 740 companies / all locations. Verified live: `manage.py check` clean, all endpoints return correct shapes against the real DB, every frontend filter/sort param maps to a working query, `npm run build` passes. Also fixed a pre-existing 500 on `GET /locations/` — `LocationSerializer` declared `raw_location` but the model/DB column is `location_raw` (this had been breaking the JobsPage location dropdown). Full 14-endpoint sweep now all 200, including the nested `jobs/<id>/` detail view. |

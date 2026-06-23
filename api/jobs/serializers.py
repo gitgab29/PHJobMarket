@@ -13,7 +13,7 @@ class LocationSerializer(serializers.ModelSerializer):
         model = DimLocation
         fields = [
             "location_key",
-            "raw_location",
+            "location_raw",
             "city",
             "province",
             "region",

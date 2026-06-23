@@ -1,49 +1,63 @@
 import { useState, useEffect } from 'react'
-import { BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { analyticsAPI } from '../api/client'
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { analyticsAPI, jobsAPI } from '../api/client'
+
+const peso = (v) => `₱${Math.round(Number(v) || 0).toLocaleString()}`
+
+const SOURCE_LABELS = {
+  philjobnet: 'PhilJobNet',
+  kalibrr: 'Kalibrr',
+  jobstreet: 'JobStreet',
+  onlinejobs: 'OnlineJobs',
+  indeed: 'Indeed',
+  facebook: 'Facebook',
+}
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState(null)
   const [salaryByLocation, setSalaryByLocation] = useState([])
-  const [salaryByExperience, setSalaryByExperience] = useState([])
+  const [salaryBySource, setSalaryBySource] = useState([])
   const [jobsBySource, setJobsBySource] = useState([])
   const [remoteVsOnsite, setRemoteVsOnsite] = useState(null)
-  const [skillTrends, setSkillTrends] = useState([])
+  const [topSkills, setTopSkills] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     Promise.all([
       analyticsAPI.dashboard(),
       analyticsAPI.salaryByLocation(),
-      analyticsAPI.salaryByExperience(),
+      analyticsAPI.salaryBySource(),
       analyticsAPI.jobsBySource(),
       analyticsAPI.remoteVsOnsite(),
-      analyticsAPI.skillTrends(),
-    ]).then(([
-      sumRes,
-      salLocRes,
-      salExpRes,
-      jobsSourceRes,
-      remoteRes,
-      skillRes,
-    ]) => {
+      jobsAPI.topSkills(10),
+    ]).then(([sumRes, salLocRes, salSrcRes, jobsSourceRes, remoteRes, skillRes]) => {
       setSummary(sumRes.data)
-      setSalaryByLocation(salLocRes.data)
-      setSalaryByExperience(salExpRes.data)
-      setJobsBySource(jobsSourceRes.data)
+      setSalaryByLocation((salLocRes.data || []).slice(0, 12))
+      setSalaryBySource((salSrcRes.data || []).map(d => ({ ...d, label: SOURCE_LABELS[d.source] || d.source })))
+      setJobsBySource((jobsSourceRes.data || []).map(d => ({ ...d, label: SOURCE_LABELS[d.source] || d.source })))
       setRemoteVsOnsite(remoteRes.data)
-      setSkillTrends(skillRes.data.slice(0, 10)) // Top 10 skills
+      setTopSkills(skillRes.data || [])
       setLoading(false)
     }).catch(err => {
       console.error(err)
+      setError(err.response?.data?.detail || err.message)
       setLoading(false)
     })
   }, [])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-slate-600">Loading dashboard...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-red-600">Error loading dashboard: {error}</div>
       </div>
     )
   }
@@ -55,133 +69,119 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Summary Cards */}
         {summary && (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-            <SummaryCard
-              label="Total Jobs"
-              value={summary.total_jobs_count?.toLocaleString() || '0'}
-              color="blue"
-            />
-            <SummaryCard
-              label="Avg Salary"
-              value={`₱${Math.round(summary.average_salary || 0).toLocaleString()}`}
-              color="purple"
-            />
-            <SummaryCard
-              label="Max Salary"
-              value={`₱${Math.round(summary.max_salary || 0).toLocaleString()}`}
-              color="pink"
-            />
-            <SummaryCard
-              label="Top Location"
-              value={summary.top_location || 'N/A'}
-              color="amber"
-            />
-            <SummaryCard
-              label="Top Company"
-              value={summary.top_company || 'N/A'}
-              color="green"
-            />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+            <SummaryCard label="Total Jobs" value={(summary.total_jobs ?? 0).toLocaleString()} color="blue" />
+            <SummaryCard label="With Salary" value={(summary.jobs_with_salary ?? 0).toLocaleString()} color="purple" />
+            <SummaryCard label="Remote Jobs" value={(summary.remote_jobs ?? 0).toLocaleString()} color="pink" />
+            <SummaryCard label="Avg Min Salary" value={peso(summary.avg_salary_min_php)} color="amber" />
+            <SummaryCard label="Avg Max Salary" value={peso(summary.avg_salary_max_php)} color="green" />
           </div>
         )}
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Salary by Location */}
-          <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Salary by Location</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={salaryByLocation}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="city" fontSize={12} />
-                <YAxis fontSize={12} />
-                <Tooltip formatter={(value) => `₱${Math.round(value).toLocaleString()}`} />
-                <Bar dataKey="avg_salary" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <ChartCard title="Average Salary by Location (PHP / month)" empty={salaryByLocation.length === 0}>
+            <BarChart data={salaryByLocation} margin={{ bottom: 40 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="city" fontSize={11} angle={-35} textAnchor="end" interval={0} height={60} />
+              <YAxis fontSize={12} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
+              <Tooltip formatter={(value) => peso(value)} />
+              <Legend />
+              <Bar dataKey="avg_salary_min" name="Avg Min" fill="#93c5fd" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="avg_salary_max" name="Avg Max" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ChartCard>
 
           {/* Jobs by Source */}
-          <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Jobs by Source</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={jobsBySource}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name} (${value})`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="count"
-                  nameKey="source"
-                >
-                  {jobsBySource.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+          <ChartCard title="Jobs by Source" empty={jobsBySource.length === 0}>
+            <PieChart>
+              <Pie
+                data={jobsBySource}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ label, value }) => `${label} (${value})`}
+                outerRadius={100}
+                dataKey="count"
+                nameKey="label"
+              >
+                {jobsBySource.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ChartCard>
 
-          {/* Salary by Experience */}
-          <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Salary by Experience</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={salaryByExperience}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="level" fontSize={12} />
-                <YAxis fontSize={12} />
-                <Tooltip formatter={(value) => `₱${Math.round(value).toLocaleString()}`} />
-                <Bar dataKey="avg_salary" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {/* Average Salary by Source */}
+          <ChartCard title="Average Salary by Source (PHP / month)" empty={salaryBySource.length === 0}>
+            <BarChart data={salaryBySource}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="label" fontSize={12} />
+              <YAxis fontSize={12} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
+              <Tooltip formatter={(value) => peso(value)} />
+              <Legend />
+              <Bar dataKey="avg_salary_min" name="Avg Min" fill="#c4b5fd" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="avg_salary_max" name="Avg Max" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ChartCard>
 
           {/* Remote vs Onsite */}
           {remoteVsOnsite && (
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Remote vs Onsite</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Remote', value: remoteVsOnsite.remote_count },
-                      { name: 'Onsite', value: remoteVsOnsite.onsite_count },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    <Cell fill="#10b981" />
-                    <Cell fill="#3b82f6" />
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <ChartCard title={`Remote vs Onsite (${remoteVsOnsite.remote_percentage ?? 0}% remote)`} empty={!remoteVsOnsite.total}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Remote', value: remoteVsOnsite.remote },
+                    { name: 'Onsite', value: remoteVsOnsite.onsite },
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                  label={({ name, value }) => `${name} (${value})`}
+                >
+                  <Cell fill="#10b981" />
+                  <Cell fill="#3b82f6" />
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ChartCard>
           )}
 
           {/* Top Skills */}
-          <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Top Skills</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={skillTrends}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="skill" fontSize={11} />
-                <YAxis fontSize={12} />
-                <Tooltip />
-                <Bar dataKey="demand_count" fill="#ec4899" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <ChartCard title="Top Skills by Demand" empty={topSkills.length === 0}>
+            <BarChart data={topSkills} margin={{ bottom: 40 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="skill_name" fontSize={11} angle={-35} textAnchor="end" interval={0} height={60} />
+              <YAxis fontSize={12} />
+              <Tooltip />
+              <Bar dataKey="posting_count" name="Postings" fill="#ec4899" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ChartCard>
         </div>
       </div>
+    </div>
+  )
+}
+
+function ChartCard({ title, empty, children }) {
+  return (
+    <div className="bg-white rounded-lg border border-slate-200 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">{title}</h3>
+      {empty ? (
+        <div className="h-[300px] flex items-center justify-center text-slate-400 text-sm">
+          No data available
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height={300}>
+          {children}
+        </ResponsiveContainer>
+      )}
     </div>
   )
 }
