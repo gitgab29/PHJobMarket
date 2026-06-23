@@ -32,6 +32,16 @@ export default function Header({ currentPage, onPageChange }) {
             >
               Dashboard
             </Link>
+            <Link
+              to="/engineering"
+              className={`text-sm font-medium transition-colors ${
+                currentPage === 'engineering'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              How It's Built
+            </Link>
           </nav>
         </div>
       </div>
