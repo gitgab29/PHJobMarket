@@ -1,0 +1,24 @@
+name: nightly_validation
+config_version: 1
+
+batch_request:
+  datasource_name: postgres_warehouse
+  data_connector_name: default_postgres_data_connector
+  data_asset_name: raw.job_postings
+
+expectation_suite_name: raw.job_postings
+
+action_list:
+  - name: store_validation_result
+    action:
+      class_name: StoreValidationResultAction
+
+  - name: store_evaluation_params
+    action:
+      class_name: StoreEvaluationParametersAction
+
+  - name: update_data_docs
+    action:
+      class_name: UpdateDataDocsAction
+      site_names:
+        - local_site

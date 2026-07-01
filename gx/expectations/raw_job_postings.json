@@ -1,0 +1,68 @@
+{
+  "expectation_suite_name": "raw.job_postings",
+  "expectations": [
+    {
+      "expectation_type": "expect_table_row_count_to_be_between",
+      "kwargs": {
+        "min_value": 1,
+        "result_format": "SUMMARY"
+      },
+      "meta": {
+        "description": "Raw data must have at least 1 row (proves scrapers returned data)"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "source",
+        "value_set": [
+          "philjobnet",
+          "kalibrr",
+          "jobstreet",
+          "onlinejobs",
+          "indeed",
+          "facebook"
+        ],
+        "result_format": "SUMMARY"
+      },
+      "meta": {
+        "description": "Source column must contain only known scraper names"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "data",
+        "result_format": "SUMMARY"
+      },
+      "meta": {
+        "description": "JSONB data blob must never be null (every record must have data)"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "scraped_at",
+        "result_format": "SUMMARY"
+      },
+      "meta": {
+        "description": "Scraped timestamp must always be present"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "scraped_at",
+        "min_value": "CURRENT_TIMESTAMP - INTERVAL '7 days'",
+        "max_value": "CURRENT_TIMESTAMP",
+        "result_format": "SUMMARY"
+      },
+      "meta": {
+        "description": "Data should be freshly scraped (within last 7 days)"
+      }
+    }
+  ],
+  "meta": {
+    "great_expectations_version": "0.18.19"
+  }
+}

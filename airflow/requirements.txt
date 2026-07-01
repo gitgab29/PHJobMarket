@@ -1,0 +1,6 @@
+playwright==1.44.0
+beautifulsoup4==4.12.3
+psycopg2-binary==2.9.9
+requests==2.32.3
+dbt-postgres==1.8.2
+great-expectations==0.18.19

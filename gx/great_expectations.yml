@@ -1,0 +1,40 @@
+config_version: 3.0
+
+datasources:
+  postgres_warehouse:
+    type: postgres
+    host: "${DB_HOST:postgres}"
+    port: 5432
+    username: "${DB_USER:phjobmarket}"
+    password: "${DB_PASSWORD:phjobmarket}"
+    database: "${DB_NAME:phjobmarket}"
+    driver: psycopg2
+
+expectations:
+  store_backend:
+    class_name: ExpectationsStore
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      base_directory: expectations
+
+checkpoints:
+  store_backend:
+    class_name: CheckpointStore
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      base_directory: checkpoints
+
+validations:
+  store_backend:
+    class_name: ValidationsStore
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      base_directory: uncommitted/validations
+
+data_docs_sites:
+  local_site:
+    class_name: SiteBuilder
+    show_how_to_buttons: true
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      base_directory: uncommitted/data_docs/local_site

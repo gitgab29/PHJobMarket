@@ -14,7 +14,7 @@
 # .PHONY tells Make that these targets are not files — they're just commands.
 # Without this, Make would check if a file named "up" exists and skip the
 # command if it did. We never want that behavior here.
-.PHONY: up down logs psql scrape-philjobnet scrape-kalibrr scrape-jobstreet scrape-onlinejobs scrape-indeed dbt-deps dbt-seed dbt-run dbt-test dbt-debug test
+.PHONY: up down logs psql scrape-philjobnet scrape-kalibrr scrape-jobstreet scrape-onlinejobs scrape-indeed dbt-deps dbt-seed dbt-run dbt-test dbt-debug test airflow-up airflow-down airflow-logs gx-validate api-setup api-run api-test
 
 # -----------------------------------------------------------------------------
 # make up
@@ -141,3 +141,82 @@ dbt-test:
 # -----------------------------------------------------------------------------
 test:
 	cd scrapers && python -m pytest tests/ -v
+
+# =============================================================================
+# AIRFLOW TARGETS (Week 4)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# make airflow-up
+# Starts all Airflow services (webserver, scheduler, postgres).
+# Airflow UI available at http://localhost:8080 (admin/admin)
+# DAGs automatically loaded from airflow/dags/
+# -----------------------------------------------------------------------------
+airflow-up:
+	docker compose build && docker compose up -d
+
+# -----------------------------------------------------------------------------
+# make airflow-down
+# Stops all Airflow services. Data in Postgres is preserved.
+# -----------------------------------------------------------------------------
+airflow-down:
+	docker compose down
+
+# -----------------------------------------------------------------------------
+# make airflow-logs
+# Streams live logs from the Airflow scheduler container.
+# Useful for debugging DAG parsing and task execution.
+# Press Ctrl+C to stop watching (doesn't stop the services).
+# -----------------------------------------------------------------------------
+airflow-logs:
+	docker compose logs -f airflow-scheduler
+
+# =============================================================================
+# GREAT EXPECTATIONS TARGETS (Week 4)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# make gx-validate
+# Runs Great Expectations validation checkpoint.
+# Validates raw.job_postings and fct_job_postings against quality rules.
+# Requires make up + local dbt/postgres setup to work.
+# -----------------------------------------------------------------------------
+gx-validate:
+	cd gx && great_expectations checkpoint run nightly_validation
+
+# =============================================================================
+# DJANGO API TARGETS (Week 5)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# make api-setup
+# Installs Django dependencies and generates necessary files.
+# Run once: pip install -r api/requirements.txt
+# Creates .env from .env.example if not exists.
+# -----------------------------------------------------------------------------
+api-setup:
+	pip install -r api/requirements.txt
+	cd api && python manage.py migrate
+
+# -----------------------------------------------------------------------------
+# make api-run
+# Starts the Django development server on http://127.0.0.1:8000/
+# API root at /api/v1/
+# Requires: make up (Postgres running) and make api-setup (dependencies installed)
+# Press Ctrl+C to stop.
+# -----------------------------------------------------------------------------
+api-run:
+	cd api && python manage.py runserver 0.0.0.0:8000
+
+# -----------------------------------------------------------------------------
+# make api-test
+# Tests all API endpoints with curl (basic smoke test).
+# Requires: make api-run (API running in another terminal)
+# Tests jobs list, job detail, companies, locations, skills, analytics endpoints.
+# -----------------------------------------------------------------------------
+api-test:
+	@echo "Testing API endpoints..."
+	@curl -s http://127.0.0.1:8000/api/v1/jobs/ | python -m json.tool | head -20 && echo "\n✅ jobs list"
+	@curl -s http://127.0.0.1:8000/api/v1/companies/ | python -m json.tool | head -20 && echo "\n✅ companies list"
+	@curl -s http://127.0.0.1:8000/api/v1/skills/top/ | python -m json.tool | head -20 && echo "\n✅ skills top"
+	@curl -s http://127.0.0.1:8000/api/v1/analytics/summary/ | python -m json.tool && echo "✅ analytics summary"
