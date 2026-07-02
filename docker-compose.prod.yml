@@ -46,11 +46,28 @@ services:
   nginx:
     build:
       context: ./frontend
-    ports:
-      - "80:80"
+    expose:
+      - "80"          # internal only; caddy terminates TLS and proxies to it
     depends_on:
       - django
     restart: unless-stopped
 
+  # Caddy is the public entrypoint: it auto-obtains + auto-renews a Let's Encrypt
+  # certificate for the domain and reverse-proxies everything to nginx over http.
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data        # persists issued certs across restarts
+      - caddy_config:/config
+    depends_on:
+      - nginx
+    restart: unless-stopped
+
 volumes:
   pgdata_prod:
+  caddy_data:
+  caddy_config:

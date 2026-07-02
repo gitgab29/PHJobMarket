@@ -1,0 +1,10 @@
+# Public HTTPS entrypoint. Caddy automatically provisions and renews a
+# Let's Encrypt certificate for this domain (HTTP-01 / TLS-ALPN on 80/443),
+# redirects http -> https, and reverse-proxies to the nginx container.
+{
+	email gabrieljericholimbo29@gmail.com
+}
+
+phjobmarket.duckdns.org {
+	reverse_proxy nginx:80
+}
